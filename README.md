@@ -89,8 +89,10 @@ Nix CLI will try to be ... smart and auto-coerce some output attribute paths for
 * `nix build '/some/path#obs-studio'`:
   * builds and run the first attribute found:
     * `/some/path#obs-studio`
-    * `/some/path#packages.{pkgs.system}.obs-studio`
+    * `/some/path#packages.x86_64-linux.obs-studio`
+    * `/some/path#legacyPackages.x86_64-linux.obs-studio`
     * TODO: finish fleshing out this list
+    * TODO: not sure about search order, presumably the bare one would be priority
 
 ## Tips for Porting to Flakes
 
@@ -102,7 +104,8 @@ Nix CLI will try to be ... smart and auto-coerce some output attribute paths for
 
 To fix these:
   * specify all remote imports in `flake.nix` instead of using `fetchTarball`
-    * TODO: example? example commit of what this looks like for `nixpkgs-wayland`
+    * the config in this repo shows an example of using the overlay from
+      `nixpkgs-wayland`.
     * TODO: investigate `getFlake` vs  passing `inputs` in `specialArgs`
 
 ## Example NixOS Config with optional Flake support
