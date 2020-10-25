@@ -12,6 +12,8 @@
 
   services.sshd.enable = true;
 
+  programs.sway.enable = true;
+
   networking.hostName = "mysystem";
 }
 
