@@ -116,6 +116,11 @@ Consider the nixos configuration in this repo:
 
 These represent an example, minimal NixOS system configuration.
 
+The easiest way to build it, without cloning this repo:
+```
+nix build 'github:colemickens/nixos-flake-example#nixosConfigurations.mysystem.config.system.build.toplevel'
+```
+
 Let's prove that we can build this config, with and without flakes:
 
 * Using `nixos-rebuild`:
