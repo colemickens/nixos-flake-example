@@ -1,8 +1,18 @@
 # nixos-flake-example
 
-This shows how to build the same config, with and without flakes.
+This shows how to build the same config, with and without flakes. And shows that both builds produce the same output.
 
-It also shows that `flake.nix` is basically just some syntax.
+It also shows that `flake.nix` is basically just some syntax. In this case,
+we are using flakes to bring our NixOS system config (`configuration.nix` and `hardware-configuration.nix`)
+into a single repository *along with* the `nixpkgs` reference used to build the system. Without flakes,
+`nixpkgs` is ... well, potentially unknowable.
+
+The point of flakes is to:
+1. remove `NIX_PATH` and all of the indirection that comes with it
+2. encourages pinning by use/creation of `flake.lock` automatically with the use of `nix` commands
+3. enables fully hermetic Nix projects were all dependencies are specified
+4. allow pure evaluation (again, enabling hermetic projects)
+5. pure evaluation allows for Nix expression caching, leading to nice UX performance gains
 
 You can run `./check.sh` to show that this builds the same system config
 with/without flakes.
