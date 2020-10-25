@@ -4,6 +4,22 @@ This shows how to build the same config, with and without flakes.
 
 It also shows that `flake.nix` is basically just some syntax.
 
+## flake fundamentals
+
+Nix is in flakes mode when:
+1. `nixos-rebuild <cmd> --flake '.#'` is used
+2. `nix build '.#something'` the hash-tag syntax is used
+
+**This automatically loads from a `flake.nix` in the specified dir.**
+
+If the flake.nix were located elsewhere you could do this too:
+
+* `nix build '/home/cole/code/nixos-flake-example#something` (loads from `/home/cole/code/nixos-flake-example`)
+* `nix build 'github.com:colemickens/nixos-flake-example#something` (loads from `flake.nix` in the root of that repo checkout)
+
+Those are just examples of syntax. Again, 
+
+
 ## overview
 
 Note that these produce the same output:
