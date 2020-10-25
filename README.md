@@ -4,6 +4,9 @@ This shows how to build the same config, with and without flakes.
 
 It also shows that `flake.nix` is basically just some syntax.
 
+You can run `./check.sh` to show that this builds the same system config
+with/without flakes.
+
 ## flake fundamentals
 
 Nix is in flakes mode when:
@@ -34,40 +37,33 @@ These three examples, for me, are all the same source, but accessed in different
 
 ## overview
 
-Note that these produce the same output:
+The `./check.sh` script proves they give the same exact system toplevel outputs:
 
-1. with flakes:
+```console
+cole@slynux ~/code/nixos-flake-example master* 7s
+❯ ./check.sh     
 
-    ```shell
-    nix build '.#nixosConfigurations.mysystem.config.system.build.toplevel'
-    readlink -f result
-    /nix/store/0imi716z1qd04pfh4zdw6mb0gnxmakjs-nixos-system-nixos-21.03.20201020.007126e
+:: Updating the 'nixpkgs' input in flake.nix
++ nix flake update --update-input nixpkgs
++ set +x
 
-    nixos-rebuild build --flake '.#mysystem'
-    readlink -f result
-    /nix/store/0imi716z1qd04pfh4zdw6mb0gnxmakjs-nixos-system-nixos-21.03.20201020.007126e
-    ```
+:: Using 'nixos-rebuild' to build the 'mysystem' toplevel
++ nixos-rebuild build --flake .#mysystem
+warning: Git tree '/home/cole/code/nixos-flake-example' is dirty
+building the system configuration...
+warning: Git tree '/home/cole/code/nixos-flake-example' is dirty
++ set +x
 
-    Note, nixos-rebuild is basically just some magic to build the right derivation
-    and then set it as a system profile, and activate it.
+:: Using rev=007126eef72271480cb7670e19e501a1ad2c1ff2 for <nixpkgs> (extracted from flake.nix)
 
-2. without flakes:
+:: Setting NIX_PATH to the same values flakes is using
++ NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/007126eef72271480cb7670e19e501a1ad2c1ff2.tar.gz:nixos-config=/home/cole/code/nixos-flake-example/configuration.nix
++ nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel
+/nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
++ set +x
 
-    ```shell
-    export NIX_PATH=nixos-config=$(pwd)/configuration.nix:nixpkgs=https://github.com/nixos/nixpkgs/archive/nixos-unstable.tar.gz
+flake: /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+clssc: /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
 
-
-    /nix/store/zidq625i13hvbbs8alkklj8k6a191xix-nixos-system-nixos-21.03pre-git
-    ```
-
-    **Note**, ~~same path~~ same inner system, just much slower due to no eval cache.
-    (they should be identical, but the flake version suffix is slightly different)
-
-They build the same thing, the flake.nix just moves the redirection from the NixOS channel system
-into the flake instead.
-
-Note, if you come back and run this later, you may need to tell nix to update the `nixpkgs` that it
-has pinned in `flake.lock` by running `nix flake update --update-input nixpkgs`. The non-flake example
-is going to re-download the nixos-unstable build when the cache expires. This could cause any hash differences
-if they're on different revs. (again, another reason to have control of it via flakes, and can lock it directly in the source.)
+```
 

@@ -15,7 +15,6 @@
 
   services.sshd.enable = true;
 
-  # etc
-
+  networking.hostName = "mysystem";
 }
 
