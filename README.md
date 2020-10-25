@@ -10,18 +10,21 @@ Nix is in flakes mode when:
 1. `nixos-rebuild <cmd> --flake '.#'` is used
 2. `nix build '.#something'` the hash-tag syntax is used
 
-**This automatically loads from a `flake.nix` in the specified dir.**
+**This automatically loads from a `flake.nix` in the specified dir. See these examples:**
 
-If the flake.nix were located elsewhere you could do this too:
+These three examples, for me, are all the same source, but accessed in different ways:
 
-* `nix build '/home/cole/code/nixos-flake-example#nixosConfigufations`
+* `nix build '.#nixosConfigurations.mysystem'`
 
-    (loads from `/home/cole/code/nixos-flake-example'`)
-* `nix build 'github.com:colemickens/nixos-flake-example#something'`
+    (loads `flake.nix` from `.` (current dir))
 
-    (loads from `flake.nix` in the root of that repo checkout)
+* `nix build '/home/cole/code/nixos-flake-example#nixosConfigurations.mysystem'`
 
-Those are just examples of syntax. Again, 
+    (loads `flake.nix` from `/home/cole/code/nixos-flake-example`)
+    
+* `nix build 'github.com:colemickens/nixos-flake-example#nixosConfigurations.mysystem'`
+
+    (nix will clone my github repo, then load `flake.nix` from `flake.nix` in the root of that repo checkout)
 
 
 ## more tips
