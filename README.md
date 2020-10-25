@@ -14,10 +14,19 @@ Nix is in flakes mode when:
 
 If the flake.nix were located elsewhere you could do this too:
 
-* `nix build '/home/cole/code/nixos-flake-example#something` (loads from `/home/cole/code/nixos-flake-example`)
-* `nix build 'github.com:colemickens/nixos-flake-example#something` (loads from `flake.nix` in the root of that repo checkout)
+* `nix build '/home/cole/code/nixos-flake-example#nixosConfigufations`
+
+    (loads from `/home/cole/code/nixos-flake-example'`)
+* `nix build 'github.com:colemickens/nixos-flake-example#something'`
+
+    (loads from `flake.nix` in the root of that repo checkout)
 
 Those are just examples of syntax. Again, 
+
+
+## more tips
+
+1. `nixos-rebuild build --flake '.#'` will automatically try to find and build the attribute: `.#nixosConfigurations.your_hostname` (assuming your machines hostname is `your_hostname`)
 
 
 ## overview
