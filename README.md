@@ -1,14 +1,20 @@
 # nixos-flake-example
 
-This readme seeks to explain and justify flakes.
-It also provides an example NixOS config with a supporting `flake.nix`,
+This readme starts out with an attempt to explain and justify flakes. It also contains
+some examples of `nix` cli flakes syntax and tips for adopting flakes in your project.
+
+Finally, [at the end of the readme](#example-nixos-config-with-optional-flake-support)
+is an example NixOS config with a supporting `flake.nix`,
 and instructions to build it with *and without* flakes support at the same time.
 
-Later, it may contain more comprehensive tips about adopting flakes and changes you made need to make to your configuration.
-
 - [Overview of Flakes (and why you want it)](#overview-of-flakes-and-why-you-want-it)
-- [The Basics of Flakes](#the-basics-of-flakes)
-- [Flake Syntax Examples](#flake-syntax-examples)
+- [Important Related Reading](#important-related-reading)
+- [Nix CLI - Flakes Usage](#nix-cli---flakes-usage)
+  - [Useful Commands and Examples](#useful-commands-and-examples)
+    - [nixos-rebuild](#nixos-rebuild)
+    - [nix build](#nix-build)
+    - [nix flake](#nix-flake)
+  - [Auto-coercion examples](#auto-coercion-examples)
 - [Tips for Porting to Flakes](#tips-for-porting-to-flakes)
 - [Example NixOS Config with optional Flake support](#example-nixos-config-with-optional-flake-support)
 
@@ -16,21 +22,11 @@ Later, it may contain more comprehensive tips about adopting flakes and changes 
 
 Flakes is a few things:
 * `flake.nix`: a Nix file, with a specific structure to describe inputs and outputs for a Nix project
-  * flake inputs can,
-    * point at directories on disk,
-    * track the tip of master of a github repository,
-    * track specific branches of a generic git repos, etc
+  * See [NixOS Wiki - Flakes - Input Schema](https://nixos.wiki/wiki/Flakes#Input_schema) for flake input examples
+  * See [NixOS Wiki - Flakes - Output Schema](https://nixos.wiki/wiki/Flakes#Input_schema) for flake output examples
 * `flake.lock`: a manifest that "locks" inputs and records the exact versions in use
 * CLI support for flake-related features
-  * `nix flake update --recreate-lock-file` for updating all inputs and recreating `flake.lock`
-  * `nix flake update --update-input nixpkgs` to update a single input to latest and recording it in `flake.lock`
-  * `nix build /some/dir#some-output` to build the `some-output` attribute in the `/some/dir` project
-  * (more, see the rest of this document for examples)
-* pure (by default) evaluations  
-  * thus the following are disallowed/unused:
-    * `NIX_PATH` and `<nixpkgs>` type constructs
-    * local user nixpkgs config (`~/.config/{nix,nixpkgs}`)
-    * unpinned imports (aka, `fetchTarball` without a pinned `rev`+`sha256`)
+* pure (by default) evaluations
 
 This ultimately enables:
 * properly hermetic builds
@@ -42,42 +38,72 @@ This removes the need for:
 * manually documenting or scripting to ensure `NIX_PATH` is set consistently for your team
 * the need for the *"the impure eval tree of sorrow"* that comes with all of today's Nix impurities
 
-## The Basics of Flakes
+## Important Related Reading
+
+* [NixOS Wiki - Flakes](https://nixos.wiki/wiki/Flakes)
+  * a somewhat haphazard collection of factoids/snippets related to flakes
+  * particularly look at: **[Flake Schema](https://nixos.wiki/wiki/Flakes#Flake_schema)**, and it's two sections: **[Input Schema](https://nixos.wiki/wiki/Flakes#Input_schema)**, **[Output Schema](https://nixos.wiki/wiki/Flakes#Output_schema)**
+* [Tweag - NixOS flakes](https://www.tweag.io/blog/2020-07-31-nixos-flakes/)
+  * this article describes how to enable flake support in `nix` and `nix-daemon`
+  * reading this article is a **pre-requisite**
+  * this README.md assumes you've enabled flakes system-wide
+
+## Nix CLI - Flakes Usage
 
 Nix is in flakes mode when:
-1. `nixos-rebuild <cmd> --flake '.#'` is used
-2. `nix build '.#something'` the hash-tag syntax is used
+* `--flake` is used with the `nixos-rebuild` command
+* or, when `nix build` is used with an argument like `'.#something'`  (the hash symbol separates the flake source from the attribute to build)
 
-Note:
-* Nix flake commands will implicitly take a directory path, it expects a `flake.nix` inside.
+When in this mode:
+* Nix flake commands will implicitly take a directory path, it expects a `flake.nix` inside
 * when you see: `nix build '.#something'`, the `.` means current directory, and `#something` means to build the `something` output attribute
 
-## Flake Syntax Examples
+### Useful Commands and Examples
+#### nixos-rebuild
+* `nixos-rebuild build --flake '.#'`
+  * looks for `flake.nix` in `.` (current dir)
+  * since it's `nixos-rebuild`, it automatically tries to build:
+    * `#nixosConfigurations.{hostname}.config.system.build.toplevel`
+* `nixos-rebuild build --flake '/code/nixos-config#mysystem'`
+  * looks for `flake.nix` in `/code/nixos-config`
+  * since it's `nixos-rebuild`, it automatically tries to build:
+    * `#nixosConfigurations.mysystem.config.system.build.toplevel`
+    * (note that this time we specifically asked, and got to build the `mysystem` config)
+#### nix build
+* `nix build 'github:colemickens/nixpkgs-wayland#obs-studio'`
+  * looks for `flake.nix`  in (a checkout of `github.com/colemickens/nixpkgs-wayland`)
+  * builds and run the first attribute found:
+    * `#obs-studio`
+    * `#packages.{currentSystem}.obs-studio`
+    * TODO: finish fleshing out this list
+#### nix flake
+* `nix flake update --recreate-lock-file`
+  * updates all inputs and recreating `flake.lock`
+* `nix flake update --update-input nixpkgs`
+  * updates a single input to latest and recording it in `flake.lock`
 
-These three examples, for me, are all the same source, but accessed in different ways:
+### Auto-coercion examples
 
-* `nix build '.#nixosConfigurations.mysystem'`
+Nix CLI will try to be ... smart and auto-coerce some output attribute paths for you.
 
-    (loads `flake.nix` from `.` (current dir))
-
-* `nix build '/home/cole/code/nixos-flake-example#nixosConfigurations.mysystem'`
-
-    (loads `flake.nix` from `/home/cole/code/nixos-flake-example`)
-    
-* `nix build 'github.com:colemickens/nixos-flake-example#nixosConfigurations.mysystem'`
-
-    (nix will clone my github repo, then load `flake.nix` from `flake.nix` in the root of that repo checkout)
-
-More auto-coercion:
-
-1. `nixos-rebuild build --flake '.#'` will automatically try to find and build the attribute: `.#nixosConfigurations.your_hostname` (assuming your machines hostname is `your_hostname`)
+* `nix build '/some/path#obs-studio'`:
+  * builds and run the first attribute found:
+    * `/some/path#obs-studio`
+    * `/some/path#packages.{pkgs.system}.obs-studio`
+    * TODO: finish fleshing out this list
 
 ## Tips for Porting to Flakes
 
-* remove sources of impurity
-  * TODO: explain how to fetchTarball pin
-  * TODO: explain how to use flake inputs in config instead of wild fetchTarball
-  * TODO: getFlake vs inputs in specialArgs
+**Remove Impurities** - Since nix flakes does a 'pure' build by default,
+  * `NIX_PATH` is ignored
+  * `<nixpkgs>` imports do not work, and explicitly error
+  * local user nixpkgs config (`~/.config/{nix,nixpkgs}`) are ignore
+  * unpinned imports (aka, `fetchTarball` without a pinned `rev`+`sha256`) are forbidden
+
+To fix these:
+  * specify all remote imports in `flake.nix` instead of using `fetchTarball`
+    * TODO: example? example commit of what this looks like for `nixpkgs-wayland`
+    * TODO: investigate `getFlake` vs  passing `inputs` in `specialArgs`
 
 ## Example NixOS Config with optional Flake support
 
@@ -96,6 +122,9 @@ Let's prove that we can build this config, with and without flakes:
     nixos-rebuild build --flake '.#mysystem'
     readlink -f ./result
     /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+
+    # !! for this next step, match the git SHA1 to what the flake.lock uses
+    #    otherwise you'll have a hash mismatch due to different nixpkgs
 
     # without flakes
     export NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/007126eef72271480cb7670e19e501a1ad2c1ff2.tar.gz:nixos-config=/home/cole/code/nixos-flake-example/configuration.nix
@@ -148,3 +177,15 @@ Let's prove that we can build this config, with and without flakes:
     clssc: /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
     ```
 
+# Flake Feedback/Ponderings
+
+- Is the hash tag syntax really worth it?
+  - For example, is:
+    - `nix build 'github:colemickens/nixpkgs-wayland#obs-studio'`
+  - really better than:
+    - `nix build --flake 'github:colemickens/nixpkgs-wayland' 'obs-studio'` ?
+
+- Are the auto-coercion rules for attribute paths worth it?
+  They definitely add some mental overhead...
+
+- 
