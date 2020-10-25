@@ -47,33 +47,64 @@ These three examples, for me, are all the same source, but accessed in different
 
 ## overview
 
-The `./check.sh` script proves they give the same exact system toplevel outputs:
+Let's prove that we can build the same config with and without flakes:
 
-```console
-cole@slynux ~/code/nixos-flake-example master* 7s
-❯ ./check.sh     
+* Using `nixos-rebuild`:
+    ```
+    # with flakes
+    unset NIX_PATH
+    nixos-rebuild build --flake .#mysystem
+    readlink -f ./result
+    /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
 
-:: Updating the 'nixpkgs' input in flake.nix
-+ nix flake update --update-input nixpkgs
-+ set +x
+    # without flakes
+    export NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/007126eef72271480cb7670e19e501a1ad2c1ff2.tar.gz:nixos-config=/home/cole/code/nixos-flake-example/configuration.nix
+    nixos-rebuild build
+    readlink -f ./result
+    /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+    ```
 
-:: Using 'nixos-rebuild' to build the 'mysystem' toplevel
-+ nixos-rebuild build --flake .#mysystem
-warning: Git tree '/home/cole/code/nixos-flake-example' is dirty
-building the system configuration...
-warning: Git tree '/home/cole/code/nixos-flake-example' is dirty
-+ set +x
+* Using `nix build`:
+    ```
+    # with flakes
+    unset NIX_PATH
+    nix build '.#nixosConfigurations.mysystem.config.system.build.toplevel
+    readlink -f ./result
+    /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
 
-:: Using rev=007126eef72271480cb7670e19e501a1ad2c1ff2 for <nixpkgs> (extracted from flake.nix)
+    # without flakes
+    export NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/007126eef72271480cb7670e19e501a1ad2c1ff2.tar.gz:nixos-config=/home/cole/code/nixos-flake-example/configuration.nix
+    nix-build '<nixos/nixpkgs>' -A config.system.build.toplevel
+    readlink -f ./result
+    /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+    ```
 
-:: Setting NIX_PATH to the same values flakes is using
-+ NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/007126eef72271480cb7670e19e501a1ad2c1ff2.tar.gz:nixos-config=/home/cole/code/nixos-flake-example/configuration.nix
-+ nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel
-/nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
-+ set +x
+* The `./check.sh` script automates this process:
 
-flake: /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
-clssc: /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+    ```console
+    cole@slynux ~/code/nixos-flake-example master* 7s
+    ❯ ./check.sh     
 
-```
+    :: Updating the 'nixpkgs' input in flake.nix
+    + nix flake update --update-input nixpkgs
+    + set +x
+
+    :: Using 'nixos-rebuild' to build the 'mysystem' toplevel
+    + nixos-rebuild build --flake .#mysystem
+    warning: Git tree '/home/cole/code/nixos-flake-example' is dirty
+    building the system configuration...
+    warning: Git tree '/home/cole/code/nixos-flake-example' is dirty
+    + set +x
+
+    :: Using rev=007126eef72271480cb7670e19e501a1ad2c1ff2 for <nixpkgs> (extracted from flake.nix)
+
+    :: Setting NIX_PATH to the same values flakes is using
+    + NIX_PATH=nixpkgs=https://github.com/nixos/nixpkgs/archive/007126eef72271480cb7670e19e501a1ad2c1ff2.tar.gz:nixos-config=/home/cole/code/nixos-flake-example/configuration.nix
+    + nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel
+    /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+    + set +x
+
+    flake: /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+    clssc: /nix/store/gg1jhmzqndqa0rfnwfdbnzrn8f74ckr6-nixos-system-mysystem-21.03pre-git
+    ```
 
