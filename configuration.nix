@@ -8,9 +8,6 @@
 
   imports = [
     ./hardware-configuration.nix
-    "${modulesPath}/installer/scan/not-detected.nix"
-
-    # list other modules here
   ];
 
   services.sshd.enable = true;
