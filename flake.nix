@@ -4,6 +4,7 @@
 
   inputs = {
     nixpkgs = { url = "github:nixos/nixpkgs/nixos-unstable"; };
+    nur = { url = "github:nix-community/NUR"; };
   };
 
   outputs = inputs:
@@ -17,7 +18,8 @@
           (import ./configuration.nix)
 
           /* ignore */ ignoreme # ignore this; don't include it; it is a small helper for this example
-       ];
+        ];
+        specialArgs = { inherit inputs; };
       };
     };
   };
