@@ -1,5 +1,9 @@
 # nixos-flake-example
 
+**NOTE**: nixflk is a better example repo for a full NixOS config layout, this repo
+is mostly to provide more context+examples around flakes, and to show that you can produce
+the same EXACT system with flakes as with nix-build, if you know what to do.
+
 This readme starts out with an attempt to explain and justify flakes. It also contains
 some examples of `nix` cli flakes syntax and tips for adopting flakes in your project.
 
