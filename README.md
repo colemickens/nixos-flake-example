@@ -51,6 +51,7 @@ This removes the need for:
   * this article describes how to enable flake support in `nix` and `nix-daemon`
   * reading this article is a **pre-requisite**
   * this README.md assumes you've enabled flakes system-wide
+  * omit using `boot.isContainer = true;` on `configuration.nix` (as the article suggests) if you want to use `nixos-rebuild` rather than `nixos-container` 
 
 ## Nix CLI - Flakes Usage
 
