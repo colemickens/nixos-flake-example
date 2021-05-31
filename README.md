@@ -1,5 +1,21 @@
 # nixos-flake-example
 
+## warning
+
+**WARNING**: You should understand that:
+
+- there is currently no path to flakes being stable
+- we can't even experiment with flakes alternatives without committing to pure-eval as a stepping stone
+- the people that CARE about the problems solved by flakes seem to care about solving this problem
+- the people using impurity everywhere don't seem very motivated to dive into this problem-space
+- as a result, the tooling is completely fractured and stagnant
+- besides some UX fixes, bugfixes, and other feature-work in Nix, this has more or less been the case for years
+- I'm tired of seeing (often self-proclaimed, repeated-from-others) FUD by non-flakes users
+ 
+  Anyway, now you know. Proceed at your own caution.
+
+## overview
+
 **NOTE**: [nixflk](https://github.com/nrdxp/nixflk) is a better example repo for a full 
 NixOS config layout, this repo is mostly to provide more context+examples around flakes, 
 and to show that you can produce the same EXACT system with flakes as with nix-build, 
