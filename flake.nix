@@ -15,7 +15,7 @@
       mysystem = inputs.nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          (import ./configuration.nix)
+          ./configuration.nix
 
           /* ignore */ ignoreme # ignore this; don't include it; it is a small helper for this example
         ];
